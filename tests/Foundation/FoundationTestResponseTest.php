@@ -78,6 +78,20 @@ class FoundationTestResponseTest extends TestCase
         $response->assertViewHas('foo', 'bar');
     }
 
+    public function testAssertViewHasNested()
+    {
+        $response = $this->makeMockResponse([
+            'render' => 'hello world',
+            'gatherData' => [
+                'foo' => [
+                    'nested' => 'bar',
+                ],
+            ],
+        ]);
+
+        $response->assertViewHas('foo.nested');
+    }
+
     public function testAssertViewHasWithNestedValue()
     {
         $response = $this->makeMockResponse([
@@ -90,6 +104,30 @@ class FoundationTestResponseTest extends TestCase
         ]);
 
         $response->assertViewHas('foo.nested', 'bar');
+    }
+
+    public function testAssertViewMissing()
+    {
+        $response = $this->makeMockResponse([
+            'render' => 'hello world',
+            'gatherData' => ['foo' => 'bar'],
+        ]);
+
+        $response->assertViewMissing('baz');
+    }
+
+    public function testAssertViewMissingNested()
+    {
+        $response = $this->makeMockResponse([
+            'render' => 'hello world',
+            'gatherData' => [
+                'foo' => [
+                    'nested' => 'bar',
+                ],
+            ],
+        ]);
+
+        $response->assertViewMissing('foo.baz');
     }
 
     public function testAssertSeeInOrder()
@@ -483,6 +521,9 @@ class FoundationTestResponseTest extends TestCase
     public function testAssertJsonCount()
     {
         $response = TestResponse::fromBaseResponse(new Response(new JsonSerializableMixedResourcesStub));
+
+        // With falsey key
+        $response->assertJsonCount(1, '0');
 
         // With simple key
         $response->assertJsonCount(3, 'bars');
@@ -918,6 +959,7 @@ class JsonSerializableMixedResourcesStub implements JsonSerializable
                 'foobar_foo' => 'foo',
                 'foobar_bar' => 'bar',
             ],
+            '0' => ['foo'],
             'bars' => [
                 ['bar' => 'foo 0', 'foo' => 'bar 0'],
                 ['bar' => 'foo 1', 'foo' => 'bar 1'],
