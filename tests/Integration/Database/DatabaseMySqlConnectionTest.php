@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase;
 
+/**
+ * @requires extension pdo_mysql
+ */
 class DatabaseMySqlConnectionTest extends TestCase
 {
     const TABLE = 'player';
@@ -25,8 +28,8 @@ class DatabaseMySqlConnectionTest extends TestCase
     {
         parent::setUp();
 
-        if (! isset($_SERVER['CI'])) {
-            $this->markTestSkipped('This test is only executed on CI.');
+        if (! isset($_SERVER['CI']) || windows_os()) {
+            $this->markTestSkipped('This test is only executed on CI in Linux.');
         }
 
         if (! Schema::hasTable(self::TABLE)) {
@@ -46,12 +49,8 @@ class DatabaseMySqlConnectionTest extends TestCase
 
     /**
      * @dataProvider floatComparisonsDataProvider
-     *
-     * @param float  $value       the value to compare against the JSON value
-     * @param string $operator    the comparison operator to use. e.g. '<', '>', '='
-     * @param bool   $shouldMatch true if the comparison should match, false if not
      */
-    public function testJsonFloatComparison(float $value, string $operator, bool $shouldMatch): void
+    public function testJsonFloatComparison($value, $operator, $shouldMatch)
     {
         DB::table(self::TABLE)->insert([self::JSON_COL => '{"rank":'.self::FLOAT_VAL.'}']);
 
@@ -62,7 +61,7 @@ class DatabaseMySqlConnectionTest extends TestCase
         );
     }
 
-    public function floatComparisonsDataProvider(): array
+    public function floatComparisonsDataProvider()
     {
         return [
             [0.2, '=', true],
@@ -77,7 +76,7 @@ class DatabaseMySqlConnectionTest extends TestCase
         ];
     }
 
-    public function testFloatValueStoredCorrectly(): void
+    public function testFloatValueStoredCorrectly()
     {
         DB::table(self::TABLE)->insert([self::FLOAT_COL => self::FLOAT_VAL]);
 
